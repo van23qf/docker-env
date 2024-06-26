@@ -1,3 +1,4 @@
 .vscode
 .env
+nginx\logs
 data/mysql
