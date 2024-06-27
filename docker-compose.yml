@@ -1,3 +1,4 @@
+version: '3'
 services:
   nginx:
     image: nginx:latest
@@ -37,6 +38,7 @@ services:
       - ${MOUNT_WEB_ROOT}:${DOCKER_WEB_ROOT}
       - ./php/7.4/php.ini:/usr/local/etc/php/php.ini
       - ./php/7.4/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./php/7.4/logs:/var/log/php
     networks:
       - backend
 
@@ -60,6 +62,7 @@ services:
       - ${MOUNT_WEB_ROOT}:${DOCKER_WEB_ROOT}
       - ./php/8.1/php.ini:/usr/local/etc/php/php.ini
       - ./php/8.1/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./php/8.1/logs:/var/log/php
     networks:
       - backend
   
@@ -83,6 +86,7 @@ services:
       - ${MOUNT_WEB_ROOT}:${DOCKER_WEB_ROOT}
       - ./php/8.3/php.ini:/usr/local/etc/php/php.ini
       - ./php/8.3/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./php/8.3/logs:/var/log/php
     networks:
       - backend
 
@@ -96,7 +100,9 @@ services:
       MYSQL_USER: dbuser
       MYSQL_PASSWORD: 123456
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
     networks:
       - backend
 
@@ -105,6 +111,11 @@ services:
     environment:
       SET_CONTAINER_TIMEZONE: true
       CONTAINER_TIMEZONE: Asia/Shanghai
+    volumes:
+      - ./redis/data:/data/redis
+      - ./redis/logs:/var/log/redis
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf", "--logfile", "/var/log/redis/redis.log" ]
     networks:
       - backend
 
@@ -115,6 +126,10 @@ services:
       CONTAINER_TIMEZONE: Asia/Shanghai
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: 123456
+    volumes:
+      - ./mongo/data:/data/db
+      - ./mongo/logs:/var/log/mongodb
+    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
     networks:
       - backend
 
