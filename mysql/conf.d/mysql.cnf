@@ -27,6 +27,8 @@
 # http://dev.mysql.com/doc/mysql/en/server-system-variables.html
 
 [mysqld]
+bind-address = 0.0.0.0
+
 # 启用错误日志
 log-error=/var/log/mysql/error.log
 

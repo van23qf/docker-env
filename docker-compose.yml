@@ -96,13 +96,13 @@ services:
       SET_CONTAINER_TIMEZONE: true
       CONTAINER_TIMEZONE: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: test
-      MYSQL_USER: dbuser
-      MYSQL_PASSWORD: 123456
+    ports:
+      - "${MYSQL_PORT}:3306"
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/logs:/var/log/mysql
       - ./mysql/conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend
 
