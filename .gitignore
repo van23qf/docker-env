@@ -1,6 +1,2 @@
 .vscode
 .env
-nginx/logs
-data/mysql
-data/mongodb
-data/redis
