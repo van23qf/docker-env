@@ -138,8 +138,3 @@ networks:
     driver: bridge
   backend:
     driver: bridge
-
-volumes:
-  mysql_data:
-  redis_data:
-  mongo_data:
