@@ -4,9 +4,14 @@
 
 ## 构建容器
 ```
-docker-compose up -d --build [服务名称]
+docker-compose up -d --build [容器名称]
 ```
 ## 运行某个版本的php命令
 ```
 docker-compose exec php74 php -m
+```
+
+## 进入某个容器的终端
+```
+docker exec -it [容器名称] /bin/bash
 ```
