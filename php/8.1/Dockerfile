@@ -28,6 +28,7 @@ RUN apt-get update \
     zlib1g-dev \
     libxml2-dev \
     libbz2-dev \
+    librdkafka-dev \
     graphviz \
     git \
     vim \
@@ -62,36 +63,23 @@ RUN docker-php-ext-configure bcmath --enable-bcmath \
   && docker-php-ext-install opcache \
   && docker-php-ext-enable opcache
 
-ARG EXT_GD
-RUN if $EXT_GD; then \
-    docker-php-ext-configure gd --with-jpeg=/usr/lib --with-freetype=/usr/include/freetype2 \
-            && docker-php-ext-install gd; \
-fi
+RUN docker-php-ext-configure gd --with-jpeg=/usr/lib --with-freetype=/usr/include/freetype2 && docker-php-ext-install gd;
 
-ARG EXT_REDIS
-RUN if $EXT_REDIS; then \
-    pecl install -o -f redis && docker-php-ext-enable redis; \
-fi
+RUN pecl install -o -f redis && docker-php-ext-enable redis;
 
-ARG EXT_GRPC
-RUN if $EXT_GRPC; then \
-    pecl install -o -f grpc && docker-php-ext-enable grpc; \
-fi
+#RUN pecl install -o -f grpc && docker-php-ext-enable grpc;
 
-ARG EXT_PROTOBUF
-RUN if $EXT_PROTOBUF; then \
-    pecl install -o -f protobuf  && docker-php-ext-enable protobuf; \
-fi
+RUN pecl install -o -f protobuf  && docker-php-ext-enable protobuf;
 
-ARG EXT_MEMCACHED
-RUN if $EXT_MEMCACHED; then \
-    pecl install -o -f memcached  && docker-php-ext-enable memcached; \
-fi
+RUN pecl install -o -f memcached  && docker-php-ext-enable memcached;
 
-ARG EXT_SWOOLED
-RUN if $EXT_SWOOLED; then \
-    pecl install -o -f swoole && docker-php-ext-enable swoole; \
-fi
+RUN pecl install -o -f xlswriter  && docker-php-ext-enable xlswriter;
+
+RUN pecl install -o -f rdkafka  && docker-php-ext-enable rdkafka;
+
+RUN pecl install -o -f igbinary  && docker-php-ext-enable igbinary;
+
+RUN pecl install -o -f swoole && docker-php-ext-enable swoole;
 
 RUN rm -rf /tmp/pear
 

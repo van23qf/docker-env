@@ -13,5 +13,5 @@ docker-compose exec php74 php -m
 
 ## 进入某个容器的终端
 ```
-docker exec -it [容器名称] /bin/bash
+docker-compose exec -it [容器名称] bash
 ```
