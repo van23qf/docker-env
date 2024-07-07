@@ -119,9 +119,10 @@ services:
     volumes:
       - ./mongo/data:/data/db
       - ./mongo/logs:/var/log/mongodb
-      - ./data/share:/data/share
-    #command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend", "--config", "/etc/mongo/mongod.conf"]
-    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
+      - ./mongo/logs:/var/log/mongodb
+      - ./mongo/mongod.conf:/etc/mongo/mongod.conf
+    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend", "--config", "/etc/mongo/mongod.conf"]
+    #command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
     networks:
       - backend
 
