@@ -67,6 +67,8 @@ RUN docker-php-ext-configure gd --with-jpeg=/usr/lib --with-freetype=/usr/includ
 
 RUN pecl install -o -f redis && docker-php-ext-enable redis;
 
+RUN pecl install -o -f mongodb && docker-php-ext-enable mongodb;
+
 #RUN pecl install -o -f grpc && docker-php-ext-enable grpc;
 
 RUN pecl install -o -f protobuf  && docker-php-ext-enable protobuf;
