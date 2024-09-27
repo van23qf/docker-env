@@ -15,6 +15,7 @@ services:
       - ./data/share:/data/share
     depends_on:
       - php74
+    restart: unless-stopped
     networks:
       - backend
       - frontend
@@ -34,24 +35,7 @@ services:
       - ./php/7.4/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
       - ./php/7.4/logs:/var/log/php
       - ./data/share:/data/share
-    networks:
-      - backend
-
-  php81:
-    image: php:8.1-fpm
-    container_name: php81
-    environment:
-      SET_CONTAINER_TIMEZONE: true
-      CONTAINER_TIMEZONE: Asia/Shanghai
-    privileged: true
-    build:
-      context: ./php/8.1
-    volumes:
-      - ${MOUNT_WEB_ROOT}:/usr/share/nginx/html
-      - ./php/8.1/php.ini:/usr/local/etc/php/php.ini
-      - ./php/8.1/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
-      - ./php/8.1/logs:/var/log/php
-      - ./data/share:/data/share
+    restart: unless-stopped
     networks:
       - backend
   
@@ -70,11 +54,26 @@ services:
       - ./php/8.3/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
       - ./php/8.3/logs:/var/log/php
       - ./data/share:/data/share
+    restart: unless-stopped
+    networks:
+      - backend
+  
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - ${PHPMYADMIN_HTTP_PORT}:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=123456
+    restart: unless-stopped
     networks:
       - backend
 
   mysql:
-    image: mysql:5.7
+    image: mysql:latest
     container_name: mysql
     environment:
       SET_CONTAINER_TIMEZONE: true
@@ -88,6 +87,7 @@ services:
       - ./mysql/conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./data/share:/data/share
+    restart: unless-stopped
     networks:
       - backend
 
@@ -103,6 +103,7 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
       - ./data/share:/data/share
     command: [ "redis-server", "/usr/local/etc/redis/redis.conf", "--logfile", "/var/log/redis/redis.log" ]
+    restart: unless-stopped
     networks:
       - backend
 
@@ -116,7 +117,8 @@ services:
       - ./mongo/data:/data/db
       - ./mongo/logs:/var/log/mongodb
       - ./mongo/mongod.conf:/etc/mongo/mongod.conf
-    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend", "--config", "/etc/mongo/mongod.conf"]
+    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
+    restart: unless-stopped
     networks:
       - backend
 
