@@ -64,7 +64,7 @@ services:
     ports:
       - ${PHPMYADMIN_HTTP_PORT}:80
     environment:
-      - PMA_ARBITRARY=1
+      - PMA_ARBITRARY=false
       - PMA_HOST=mysql
       - PMA_USER=root
       - PMA_PASSWORD=123456
@@ -79,14 +79,14 @@ services:
       SET_CONTAINER_TIMEZONE: true
       CONTAINER_TIMEZONE: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/logs:/var/log/mysql
-      - ./mysql/conf.d/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./data/share:/data/share
+      - ./mysql/conf.d/custom.cnf:/etc/mysql/conf.d/custom.cnf
     restart: unless-stopped
     networks:
       - backend
