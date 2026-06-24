@@ -1,0 +1,114 @@
+name: ${COMPOSE_PROJECT_NAME:-docker-env}
+
+# Docker 集成环境
+# 通过 .env 中的 ENABLED_SERVICES 或 manage.sh 指定服务名来启用对应容器。
+# 每个服务都带有 profiles，未指定 --profile 时不会启动。
+
+services:
+  # ============================================================
+  # pgvector : PostgreSQL + vector 扩展
+  # ============================================================
+  pgvector:
+    profiles: ["pgvector"]
+    image: pgvector/pgvector:pg17
+    container_name: ${COMPOSE_PROJECT_NAME:-docker-env}-pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./data/pgvector:/var/lib/postgresql/data
+      - ./logs/pgvector:/var/log/postgresql
+      - ./conf/pgvector/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================
+  # MySQL 8.4
+  # ============================================================
+  mysql:
+    profiles: ["mysql"]
+    image: mysql:8.4
+    container_name: ${COMPOSE_PROJECT_NAME:-docker-env}-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mysql}
+      MYSQL_USER: ${MYSQL_USER:-mysql}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mysql}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
+      - ./conf/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # ============================================================
+  # Redis 7
+  # ============================================================
+  redis:
+    profiles: ["redis"]
+    image: redis:7-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-docker-env}-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - ./data/redis:/data
+      - ./logs/redis:/logs
+      - ./conf/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command:
+      - "redis-server"
+      - "/usr/local/etc/redis/redis.conf"
+      - "--requirepass"
+      - "${REDIS_PASSWORD:-}"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ============================================================
+  # MinIO (S3 兼容对象存储)
+  # ============================================================
+  minio:
+    profiles: ["minio"]
+    image: minio/minio:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-docker-env}-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - ./data/minio:/data
+      - ./logs/minio:/var/log/minio
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
