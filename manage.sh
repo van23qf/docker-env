@@ -11,7 +11,7 @@
 #   ./manage.sh logs [服务名]         查看日志 (跟踪输出，Ctrl+C 退出)
 #   ./manage.sh pull [服务名...]      拉取镜像
 #   ./manage.sh status                同 ps
-# 服务名可选: pgvector mysql redis minio
+# 服务名可选: pgvector mysql redis minio elasticsearch
 # ============================================================
 set -euo pipefail
 
@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # 已知服务列表 (用于校验与提示)
-KNOWN_SERVICES="pgvector mysql redis minio"
+KNOWN_SERVICES="pgvector mysql redis minio elasticsearch"
 
 # 从 .env 安全读取 ENABLED_SERVICES (不 source，避免 .env 内容被执行)
 # 其他变量由 docker compose 自行读取当前目录 .env
@@ -53,9 +53,17 @@ build_profiles() {
 
 # 确保数据/日志/配置目录存在，并给日志目录放宽权限
 ensure_dirs() {
-  local svc
+  local svc data_dir
   for svc in "$@"; do
-    mkdir -p "data/$svc" "logs/$svc" "conf/$svc"
+    data_dir="data/$svc"
+    if [ ! -d "$data_dir" ]; then
+      mkdir -p "$data_dir"
+      if [ "$svc" = "elasticsearch" ]; then
+        # 官方镜像以 uid 1000 运行；新建的 bind mount 必须允许其初始化数据。
+        chmod 0777 "$data_dir"
+      fi
+    fi
+    mkdir -p "logs/$svc" "conf/$svc"
     # 日志目录需要被容器内服务用户写入 (postgres uid=999 等)
     chmod 1777 "logs/$svc" 2>/dev/null || true
   done
